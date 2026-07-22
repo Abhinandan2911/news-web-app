@@ -4,9 +4,16 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
 const IS_PLACEHOLDER_SUPABASE =
-  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
+  !supabaseUrl ||
+  !supabaseAnonKey ||
+  supabaseUrl.includes('placeholder') ||
+  supabaseAnonKey.includes('placeholder');
 
 export async function loginAction(formData: FormData) {
   const email = formData.get('email') as string;
