@@ -13,12 +13,14 @@ const IS_PLACEHOLDER_SUPABASE =
   supabaseAnonKey.includes('placeholder');
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  let supabaseResponse = NextResponse.next();
 
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
+
+  if (pathname.startsWith('/_next')) {
+    return NextResponse.next();
+  }
 
   // Check demo role cookie for instant local execution
   const demoRole = request.cookies.get('demo_role')?.value;
@@ -55,63 +57,64 @@ export async function updateSession(request: NextRequest) {
     return supabaseResponse;
   }
 
-  // Active Supabase credentials handling
-  const supabase = createServerClient(supabaseUrl!, supabaseAnonKey!, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
+  try {
+    // Active Supabase credentials handling
+    const supabase = createServerClient(supabaseUrl!, supabaseAnonKey!, {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+          supabaseResponse = NextResponse.next();
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
       },
-      setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
-        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-        supabaseResponse = NextResponse.next({
-          request,
-        });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          supabaseResponse.cookies.set(name, value, options)
-        );
-      },
-    },
-  });
+    });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-  if (isWorkspacePath || isAdminPath) {
-    if (!user && !demoRole) {
-      url.pathname = '/login';
-      url.searchParams.set('redirectTo', pathname);
-      return NextResponse.redirect(url);
-    }
+    if (isWorkspacePath || isAdminPath) {
+      if (!user && !demoRole) {
+        url.pathname = '/login';
+        url.searchParams.set('redirectTo', pathname);
+        return NextResponse.redirect(url);
+      }
 
-    let role = demoRole || 'reader';
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      let role = demoRole || 'reader';
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-      if (profile?.role) {
-        role = profile.role;
+        if (profile?.role) {
+          role = profile.role;
+        }
+      }
+
+      if (isAdminPath && !['admin', 'editor'].includes(role)) {
+        url.pathname = '/workspace';
+        return NextResponse.redirect(url);
+      }
+
+      if (isWorkspacePath && !['author', 'editor', 'admin'].includes(role)) {
+        url.pathname = '/';
+        return NextResponse.redirect(url);
       }
     }
 
-    if (isAdminPath && !['admin', 'editor'].includes(role)) {
-      url.pathname = '/workspace';
+    if ((pathname === '/login' || pathname === '/signup') && (user || demoRole)) {
+      const targetRole = demoRole || 'reader';
+      url.pathname = ['admin', 'editor'].includes(targetRole) ? '/admin' : '/workspace';
       return NextResponse.redirect(url);
     }
-
-    if (isWorkspacePath && !['author', 'editor', 'admin'].includes(role)) {
-      url.pathname = '/';
-      return NextResponse.redirect(url);
-    }
-  }
-
-  if ((pathname === '/login' || pathname === '/signup') && (user || demoRole)) {
-    const targetRole = demoRole || 'reader';
-    url.pathname = ['admin', 'editor'].includes(targetRole) ? '/admin' : '/workspace';
-    return NextResponse.redirect(url);
+  } catch (error) {
+    return NextResponse.next();
   }
 
   return supabaseResponse;
