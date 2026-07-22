@@ -6,9 +6,16 @@ import { createClient } from '@/lib/supabase/server';
 import { Article, ArticleStatus } from '@/types/news';
 import slugify from 'slugify';
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
 const IS_PLACEHOLDER_SUPABASE =
-  !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL.includes('placeholder');
+  !supabaseUrl ||
+  !supabaseAnonKey ||
+  supabaseUrl.includes('placeholder') ||
+  supabaseAnonKey.includes('placeholder');
 
 // Rich, high-quality sample news dataset across all categories
 let mockArticles: Article[] = [
@@ -281,7 +288,7 @@ export async function getArticleBySlug(slug: string) {
         .from('articles')
         .select('*, author:profiles(*)')
         .eq('slug', slug)
-        .single();
+        .maybeSingle();
 
       if (!error && data) {
         return data as Article;
