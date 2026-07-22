@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 42 35% 95%; /* #f7f4ed */
+    --foreground: 24 10% 10%; /* #1c1917 */
+
+    --card: 45 40% 98%; /* #fdfcf9 */
+    --card-foreground: 24 10% 10%;
+
+    --popover: 45 40% 98%;
+    --popover-foreground: 24 10% 10%;
+
+    --primary: 355 73% 41%; /* #b71c1c */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 20% 91%; /* #efebe4 */
+    --secondary-foreground: 24 10% 10%;
+
+    --muted: 40 18% 88%; /* #e8e4d9 */
+    --muted-foreground: 25 5% 45%;
+
+    --accent: 40 20% 91%;
+    --accent-foreground: 24 10% 10%;
+
+    --destructive: 0 75% 40%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 40 18% 88%;
+    --input: 40 18% 88%;
+    --ring: 355 73% 41%;
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    background-color: #f7f4ed;
+    color: #1c1917;
+    @apply font-sans antialiased;
+  }
+}
+
+/* TipTap Editor Surface Styling */
+.ProseMirror {
+  outline: none;
+  min-height: 250px;
+  padding: 1rem;
+  background-color: #fdfcf9;
+  color: #1c1917;
+  font-family: Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #a8a29e;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #1c1917;
+}
+
+.ProseMirror h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #1c1917;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ProseMirror blockquote {
+  border-left: 4px solid #b71c1c;
+  padding-left: 1rem;
+  font-style: italic;
+  margin: 1rem 0;
+  color: #44403c;
+}
