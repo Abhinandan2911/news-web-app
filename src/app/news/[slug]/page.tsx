@@ -18,11 +18,11 @@ export default async function ArticleDetailPage({ params }: ArticlePageProps) {
   const resolvedParams = await params;
   const article = await getArticleBySlug(resolvedParams.slug);
 
-  if (!article) {
+  if (!article || typeof article !== 'object' || !article.title || !article.content) {
     notFound();
   }
 
-  const sanitizedContent = DOMPurify.sanitize(article.content);
+  const sanitizedContent = DOMPurify.sanitize(article.content || '');
 
   return (
     <div className="min-h-screen bg-[#f7f4ed] text-[#1c1917] flex flex-col font-sans">
